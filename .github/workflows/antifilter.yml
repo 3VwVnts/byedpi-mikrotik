@@ -1,0 +1,32 @@
+name: Generate antifilter RSC
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # ежедневно 02:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  gen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate .rsc
+        run: |
+          chmod +x scripts/gen-antifilter-rsc.sh
+          ./scripts/gen-antifilter-rsc.sh
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add dist/antifilter.rsc
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "chore: update antifilter list $(date -u +%F)"
+            git push
+          fi

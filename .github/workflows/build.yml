@@ -1,0 +1,73 @@
+name: Build & Push multiarch
+
+on:
+  schedule:
+    - cron: "0 3 * * 1" # каждый понедельник 03:00 UTC — проверка обновлений
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "Dockerfile"
+      - "entrypoint.sh"
+      - "tun.yml.template"
+      - ".github/workflows/build.yml"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm,arm64,amd64
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Detect latest upstream versions
+        id: ver
+        run: |
+          BYEDPI=$(curl -sf https://api.github.com/repos/hufrea/byedpi/releases/latest | jq -r .tag_name)
+          HEV=$(curl -sf https://api.github.com/repos/heiher/hev-socks5-tunnel/releases/latest | jq -r .tag_name)
+          # Фолбэки на случай, если API недоступен
+          [ "$BYEDPI" = "null" ] && BYEDPI=v0.17.3
+          [ "$HEV" = "null" ] && HEV=2.14.4
+          echo "byedpi=$BYEDPI" >> $GITHUB_OUTPUT
+          echo "hev=$HEV" >> $GITHUB_OUTPUT
+          echo "Building ByeDPI=$BYEDPI  Hev=$HEV"
+
+      - name: Lowercase owner
+        id: owner
+        run: echo "name=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
+
+      - name: Build & push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/arm/v7,linux/arm64,linux/amd64
+          push: true
+          build-args: |
+            BYEDPI_VER=${{ steps.ver.outputs.byedpi }}
+            HEV_VER=${{ steps.ver.outputs.hev }}
+          tags: |
+            ghcr.io/${{ steps.owner.outputs.name }}/byedpi-tun:latest
+            ghcr.io/${{ steps.owner.outputs.name }}/byedpi-tun:byedpi-${{ steps.ver.outputs.byedpi }}-hev-${{ steps.ver.outputs.hev }}
+          provenance: false # важно! RouterOS не любит provenance-манифесты
+
+      - name: Summary
+        run: |
+          echo "### ✅ Published" >> $GITHUB_STEP_SUMMARY
+          echo "- ByeDPI: ${{ steps.ver.outputs.byedpi }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Hev: ${{ steps.ver.outputs.hev }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Image: ghcr.io/${{ steps.owner.outputs.name }}/byedpi-tun:latest" >> $GITHUB_STEP_SUMMARY
