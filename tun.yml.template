@@ -1,0 +1,13 @@
+tunnel:
+  name: tun0
+  mtu: __MTU__
+  ipv4: __TUN_IP__
+
+socks5:
+  address: 127.0.0.1
+  port: __PORT__
+  udp: 'udp'
+
+misc:
+  task-stack-size: 20480
+  log-level: warn
