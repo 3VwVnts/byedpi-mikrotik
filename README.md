@@ -3,7 +3,7 @@
 [![Build & Push multiarch](https://github.com/3VwVnts/byedpi-mikrotik/actions/workflows/build.yml/badge.svg)](https://github.com/3VwVnts/byedpi-mikrotik/actions/workflows/build.yml)
 [![Generate antifilter RSC](https://github.com/3VwVnts/byedpi-mikrotik/actions/workflows/gen-rsc.yml/badge.svg)](https://github.com/3VwVnts/byedpi-mikrotik/actions/workflows/gen-rsc.yml)
 [![Latest release](https://img.shields.io/github/v/release/3VwVnts/byedpi-mikrotik?display_name=tag)](https://github.com/3VwVnts/byedpi-mikrotik/releases/latest)
-[![License](https://img.shields.io/github/license/3VwVnts/byedpi-mikrotik)](LICENSE)
+[![License](https://img.shields.io/github/license/3VwVnts/byedpi-mikrotik?v=2)](LICENSE)
 
 Локальный обход блокировок на MikroTik через Docker-контейнер.
 **ByeDPI** (обход DPI) + **HevSocks5Tunnel** (заворот трафика в SOCKS5).  
