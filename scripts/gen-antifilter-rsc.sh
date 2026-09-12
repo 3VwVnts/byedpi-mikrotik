@@ -2,7 +2,7 @@
 set -e
 
 LIST_NAME="za_dpi_FWD"
-SRC_URL="https://antifilter.network/download/ipsmart.lst"
+SRC_URL="https://antifilter.download/list/allyouneed.lst"
 OUT_DIR="dist"
 OUT_FILE="${OUT_DIR}/antifilter.rsc"
 
