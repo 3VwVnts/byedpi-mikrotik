@@ -2,7 +2,7 @@ name: Build & Push multiarch
 
 on:
   schedule:
-    - cron: "0 3 * * 1" # каждый понедельник 03:00 UTC — проверка обновлений
+    - cron: "0 3 * * 1"
   workflow_dispatch:
   push:
     branches: [main]
@@ -40,9 +40,8 @@ jobs:
         run: |
           BYEDPI=$(curl -sf https://api.github.com/repos/hufrea/byedpi/releases/latest | jq -r .tag_name)
           HEV=$(curl -sf https://api.github.com/repos/heiher/hev-socks5-tunnel/releases/latest | jq -r .tag_name)
-          # Фолбэки на случай, если API недоступен
           [ "$BYEDPI" = "null" ] && BYEDPI=v0.17.3
-          [ "$HEV" = "null" ] && HEV=2.14.4
+          [ "$HEV" = "null" ] && HEV=2.17.1
           echo "byedpi=$BYEDPI" >> $GITHUB_OUTPUT
           echo "hev=$HEV" >> $GITHUB_OUTPUT
           echo "Building ByeDPI=$BYEDPI  Hev=$HEV"
@@ -52,7 +51,7 @@ jobs:
         run: echo "name=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_OUTPUT
 
       - name: Build & push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/arm/v7,linux/arm64,linux/amd64
@@ -63,7 +62,7 @@ jobs:
           tags: |
             ghcr.io/${{ steps.owner.outputs.name }}/byedpi-tun:latest
             ghcr.io/${{ steps.owner.outputs.name }}/byedpi-tun:byedpi-${{ steps.ver.outputs.byedpi }}-hev-${{ steps.ver.outputs.hev }}
-          provenance: false # важно! RouterOS не любит provenance-манифесты
+          provenance: false
 
       - name: Summary
         run: |
