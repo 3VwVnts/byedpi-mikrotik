@@ -1,11 +1,11 @@
 .git
+.gitignore
 .github
 mikrotik
 scripts
+dist
 README.md
 *.md
-dist
 .DS_Store
 **/.DS_Store
 .dockerignore
-.gitignore

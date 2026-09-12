@@ -1,6 +1,11 @@
 # byedpi-mikrotik
 
-Локальный обход блокировок на MikroTik через Docker-контейнер.  
+[![Build & Push multiarch](https://github.com/3VwVnts/byedpi-mikrotik/actions/workflows/build.yml/badge.svg)](https://github.com/3VwVnts/byedpi-mikrotik/actions/workflows/build.yml)
+[![Generate antifilter RSC](https://github.com/3VwVnts/byedpi-mikrotik/actions/workflows/gen-rsc.yml/badge.svg)](https://github.com/3VwVnts/byedpi-mikrotik/actions/workflows/gen-rsc.yml)
+[![Latest release](https://img.shields.io/github/v/release/3VwVnts/byedpi-mikrotik?display_name=tag)](https://github.com/3VwVnts/byedpi-mikrotik/releases/latest)
+[![License](https://img.shields.io/github/license/3VwVnts/byedpi-mikrotik)](LICENSE)
+
+Локальный обход блокировок на MikroTik через Docker-контейнер.
 **ByeDPI** (обход DPI) + **HevSocks5Tunnel** (заворот трафика в SOCKS5).  
 Whitelist через [antifilter.download](https://antifilter.download).  
 Селективная маршрутизация — средствами RouterOS. **Без внешних VPS.**
@@ -228,6 +233,21 @@ GitHub Actions соберёт образ и опубликует в `ghcr.io/В�
 
 ---
 
+## Релизы и версии
+
+Проект версионируется по [SemVer](https://semver.org/lang/ru/):
+
+- `vX.Y.Z` — стабильные релизы. Образ публикуется с тегами `vX.Y.Z`, `vX.Y`, `vX`, `latest`.
+- При ломающих изменениях (переименование ENV, изменение интерфейсов контейнера) — `MAJOR`.
+- При новых фичах — `MINOR`.
+- При обновлении ByeDPI/Hev и багфиксах — `PATCH`.
+
+Готовые `.rsc` и `.sh` прикреплены к каждому релизу: [Releases](https://github.com/3VwVnts/byedpi-mikrotik/releases).
+
+Если хочется стабильности — используйте `ghcr.io/3vwvnts/byedpi-tun:v1.0.0` вместо `:latest`.
+
+---
+
 ## Конфигурация (ENV)
 
 | Переменная   | Дефолт                          | Описание                                                      |
@@ -236,6 +256,7 @@ GitHub Actions соберёт образ и опубликует в `ghcr.io/В�
 | `QUIC`       | `REJECT`                        | `REJECT`/`0` = не туннелировать UDP; `ACCEPT` = туннелировать |
 | `SOCKS_PORT` | `1080`                          | Порт SOCKS5                                                   |
 | `MTU`        | `8500`                          | MTU туннеля                                                   |
+| `TUN_IP`     | `172.16.0.1`                    | Внутренний IP TUN-интерфейса внутри контейнера                |
 
 ### Смена стратегии на лету
 
@@ -297,7 +318,10 @@ curl -I https://www.youtube.com
 Dockerfile                  — сборка образа
 entrypoint.sh               — запуск ByeDPI + туннеля, обработка ENV
 tun.yml.template            — шаблон конфига HevSocks5Tunnel
-.github/workflows/          — автосборка образа + генерация antifilter.rsc
+.github/workflows/
+  build.yml                 — автосборка образа (multiarch)
+  gen-rsc.yml               — генерация antifilter.rsc + автокоммит
+  release.yml               — публикация semver-релизов (запуск по тегу)
 mikrotik/
   01-network.rsc            — bridge + veth
   02-container.rsc          — tmpfs + контейнер + ENV
