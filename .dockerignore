@@ -4,3 +4,8 @@ mikrotik
 scripts
 README.md
 *.md
+dist
+.DS_Store
+**/.DS_Store
+.dockerignore
+.gitignore

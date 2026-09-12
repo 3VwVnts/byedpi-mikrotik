@@ -1,44 +1,34 @@
 # === macOS ===
 .DS_Store
-.DS_Store?
+.DS_Store*
 ._*
 .Spotlight-V100
 .Trashes
-*.tar
-*.tar.gz
 
 # === Windows ===
-# Файлы метаданных и кэша
 Thumbs.db
 ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
 *.lnk
 
-# Временные файлы
-*.tmp
-*.temp
-~$*.doc*
-~$*.xls*
-~$*.ppt*
-
 # === Linux ===
-# Файлы редакторов и IDE
 *~
 .fuse_hidden*
 .Trash-*
 .nfs*
-
-# Временные и backup-файлы
 *.bak
 *.swp
 *.swo
-*~
-.cache/
-.DS_Store
-**/.DS_Store
+
+# === Архивы ===
+*.tar
+*.tar.gz
+*.zip
+
+# === IDE / редакторы ===
+.idea/
+.vscode/
+*.tmp
+*.temp
+~$*

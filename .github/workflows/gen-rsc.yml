@@ -2,8 +2,13 @@ name: Generate antifilter RSC
 
 on:
   schedule:
-    - cron: "0 2 * * *" # ежедневно 02:00 UTC
+    - cron: "0 2 * * *" # ежедневно в 02:00 UTC
   workflow_dispatch:
+
+# Если запусков несколько — оставляем только последний.
+concurrency:
+  group: gen-antifilter-rsc
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -11,8 +16,10 @@ permissions:
 jobs:
   gen:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v5
 
       - name: Generate .rsc
         run: |
@@ -21,11 +28,11 @@ jobs:
 
       - name: Commit if changed
         run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add dist/antifilter.rsc
           if git diff --cached --quiet; then
-            echo "No changes"
+            echo "No changes — nothing to commit."
           else
             git commit -m "chore: update antifilter list $(date -u +%F)"
             git push
