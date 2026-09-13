@@ -21,6 +21,9 @@ RUN git clone --depth 1 --branch "${HEV_VER}" --recursive \
     && make \
     && strip bin/hev-socks5-tunnel
 
+# ============ Статический busybox (официальный образ) ============
+FROM busybox:stable-musl AS busybox
+
 # ============ Минимальный финальный образ (scratch) ============
 FROM scratch
 
@@ -29,9 +32,9 @@ LABEL org.opencontainers.image.title="byedpi-tun" \
       org.opencontainers.image.source="https://github.com/3VwVnts/byedpi-mikrotik" \
       org.opencontainers.image.licenses="MIT"
 
-COPY --from=byedpi /src/ciadpi                 /ciadpi
-COPY --from=tun    /src/bin/hev-socks5-tunnel  /tun2socks
-COPY --from=byedpi /bin/busybox                /busybox
+COPY --from=byedpi  /src/ciadpi                /ciadpi
+COPY --from=tun     /src/bin/hev-socks5-tunnel /tun2socks
+COPY --from=busybox /bin/busybox               /busybox
 
 COPY entrypoint.sh      /entrypoint.sh
 COPY tun.yml.template   /tun.yml.template
