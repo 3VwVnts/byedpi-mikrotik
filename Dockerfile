@@ -18,7 +18,7 @@ RUN apk add --no-cache git make gcc musl-dev linux-headers
 WORKDIR /src
 RUN git clone --depth 1 --branch "${HEV_VER}" --recursive \
         https://github.com/heiher/hev-socks5-tunnel . \
-    && make CFLAGS="-static -O2" LDFLAGS="-static" \
+    && make ENABLE_STATIC=1 \
     && strip bin/hev-socks5-tunnel
 
 # ============ Статический busybox ============
