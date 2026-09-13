@@ -108,51 +108,67 @@ add name=antifilter-update interval=1d start-time=04:00:00 \
 
 # ---- 6. Health-check: мониторинг + авто-восстановление (tmpfs) ----
 /system/script
-add name=byedpi-healthcheck dont-require-permissions=no policy=read,write,test,ftp \
+add name=byedpi-healthcheck dont-require-permissions=no policy=read,write,test \
     source={
-    :local checkHost "youtube.com"
     :local containerIf "BYEDPI-TUN"
+    :local containerImage "ghcr.io/3VwVnts/byedpi-tun:latest"
     :local maxFails 3
+
     :global byedpiFails
     :if ([:typeof $byedpiFails] = "nothing") do={ :set byedpiFails 0 }
 
-    # Контейнер существует? (tmpfs мог стереть после ребута)
-    :local cExists [:len [/container/find interface=$containerIf]]
-    :if ($cExists = 0) do={
+    # ЭТАП 1: контейнер существует? (tmpfs мог стереть после ребута)
+    :local cIdx [/container/find where interface=$containerIf]
+    :if ([:len $cIdx] = 0) do={
         :log warning "byedpi-hc: container missing -> re-adding"
         :do {
             /container/add \
-                remote-image=ghcr.io/3VwVnts/byedpi-tun:latest \
+                remote-image=$containerImage \
                 interface=$containerIf root-dir=docker/byedpi \
                 envlists=byedpi start-on-boot=yes logging=yes
             :delay 10s
-            /container/start [find interface=$containerIf]
+            /container/start [find where interface=$containerIf]
+            :log info "byedpi-hc: container re-created and started"
         } on-error={ :log error "byedpi-hc: re-add failed" }
         :return
     }
 
-    # Проверка туннеля через таблицу dpi_mark
-    :local ok false
+    # ЭТАП 2: читаем статус (совместимо с RouterOS 7.x)
+    :local cStatus "unknown"
     :do {
-        :local ip [:resolve $checkHost]
-        :local res [/ping $ip count=3 routing-table=dpi_mark interval=1]
-        :if ($res > 0) do={ :set ok true }
-    } on-error={ :set ok false }
-    :local cStatus [/container/get [find interface=$containerIf] status]
-    :if ($cStatus != "running") do={ :set ok false }
+        :set cStatus [/container/get value-name=status $cIdx]
+    } on-error={
+        :log warning "byedpi-hc: cannot read container status"
+        :set cStatus "error"
+    }
 
+    # ЭТАП 3: контейнер running?
+    :local ok false
+    :if ($cStatus = "running") do={
+        :set ok true
+    } else={
+        :log warning "byedpi-hc: container not running (status=$cStatus)"
+    }
+
+    # ЭТАП 4: реакция
     :if ($ok) do={
+        :if ($byedpiFails > 0) do={
+            :log info "byedpi-hc: recovered after $byedpiFails fails"
+        }
         :set byedpiFails 0
     } else={
         :set byedpiFails ($byedpiFails + 1)
-        :log warning "byedpi-hc: FAILED ($byedpiFails/$maxFails)"
+        :log warning "byedpi-hc: check FAILED ($byedpiFails/$maxFails)"
         :if ($byedpiFails >= $maxFails) do={
-            :log error "byedpi-hc: restarting container"
+            :log error "byedpi-hc: max fails reached -> restarting container"
             :do {
-                /container/stop [find interface=$containerIf]
+                /container/stop [find where interface=$containerIf]
                 :delay 5s
-                /container/start [find interface=$containerIf]
-            } on-error={ :do { /container/start [find interface=$containerIf] } on-error={} }
+                /container/start [find where interface=$containerIf]
+            } on-error={
+                :log warning "byedpi-hc: restart failed, trying force start"
+                :do { /container/start [find where interface=$containerIf] } on-error={}
+            }
             :set byedpiFails 0
         }
     }
@@ -169,7 +185,7 @@ add name=byedpi-healthcheck interval=2m on-event=byedpi-healthcheck \
 # ==========================================================
 #  ГОТОВО. Проверьте порядок правил:
 #    /ip/firewall/mangle/print   (Mark/Route bypass ДОЛЖНЫ быть выше MSS)
-#    /ip/firewall/filter/print   (accept + QUIC ДОЛЖНЫ быть выше правила 17)
+#    /ip/firewall/filter/print   (accept + QUIC ДОЛЖНЫ быть выше drop-правила)
 #  Диагностика:
 #    /container/print
 #    /log/print where message~"byedpi"
