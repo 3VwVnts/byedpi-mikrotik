@@ -11,7 +11,7 @@ RUN git clone --depth 1 --branch "${BYEDPI_VER}" https://github.com/hufrea/byedp
     && make CFLAGS="-static -O2" LDFLAGS="-static" \
     && strip ciadpi
 
-# ============ HevSocks5Tunnel (статическая сборка) ============
+# ============ HevSocks5Tunnel (статическая сборка через ENABLE_STATIC) ============
 FROM alpine:${ALPINE_VERSION} AS tun
 ARG HEV_VER=2.17.1
 RUN apk add --no-cache git make gcc musl-dev linux-headers
@@ -21,7 +21,7 @@ RUN git clone --depth 1 --branch "${HEV_VER}" --recursive \
     && make ENABLE_STATIC=1 \
     && strip bin/hev-socks5-tunnel
 
-# ============ Статический busybox ============
+# ============ Статический busybox из официального образа ============
 FROM busybox:stable-musl AS busybox
 
 # ============ Минимальный финальный образ (scratch) ============

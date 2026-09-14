@@ -7,11 +7,25 @@
 #    2. Замените ВАШ_ЛОГИН на свой GitHub-логин (в 3 местах)
 #    3. Сделайте бэкап: /export file=backup-before-byedpi
 #
-#  ВАЖНО:
-#    - Правила вставляются ПЕРЕД "forward: Drop all other (Default Deny)".
-#      Если у вас другой комментарий у Default Deny — замените вручную.
-#    - Правила mangle вставляются в НАЧАЛО цепочки prerouting/forward.
+#  Скрипт ИДЕМПОТЕНТНЫЙ — при повторном импорте удалит
+#  свои старые правила по комментариям и создаст заново.
+#
+#  ВАЖНО: bridge BYEDPI-TUN является slave-портом Bridge-Docker,
+#  поэтому во всех правилах firewall/mangle/NAT используется
+#  мастер-интерфейс Bridge-Docker, а не BYEDPI-TUN.
 # ==========================================================
+
+# ---- 0. Очистка от предыдущей установки ----
+/ip/firewall/filter/remove [find where comment~"ByeDPI"]
+/ip/firewall/filter/remove [find where comment~"Block QUIC"]
+/ip/firewall/mangle/remove [find where comment~"ByeDPI MSS"]
+/ip/firewall/mangle/remove [find where comment~"Mark bypass"]
+/ip/firewall/mangle/remove [find where comment~"To DPI table"]
+/ip/firewall/nat/remove    [find where comment~"ByeDPI"]
+/system/script/remove      [find where name="update-antifilter"]
+/system/script/remove      [find where name="byedpi-healthcheck"]
+/system/scheduler/remove   [find where name="antifilter-update"]
+/system/scheduler/remove   [find where name="byedpi-healthcheck"]
 
 # ---- 1. Сеть: bridge + veth для контейнера ----
 /interface/bridge
@@ -55,56 +69,53 @@ add disabled=no distance=1 dst-address=0.0.0.0/0 \
     comment="Bypass traffic -> ByeDPI"
 
 # ---- 4. NAT ----
-# 4.1. NAT для контейнера в интернет (ВАЖНО — без этого пакеты уходят с приватным IP)
+# 4.1. NAT для контейнера в интернет
 /ip/firewall/nat
 add chain=srcnat action=masquerade src-address=192.168.254.0/24 out-interface-list=WAN \
     comment="NAT: ByeDPI to WAN"
-# 4.2. NAT для трафика клиентов в контейнер (для корректного возврата)
+# 4.2. NAT для трафика клиентов в контейнер
 add chain=srcnat action=masquerade out-interface=Bridge-Docker \
     comment="NAT: LAN to ByeDPI"
 
 # ---- 5. Firewall: forward accept + блок QUIC ----
-# Все правила вставляются ПЕРЕД вашим "forward: Drop all other (Default Deny)"
-# Если у вас другое имя — замените подстроку в place-before.
+# 5.1. LAN -> контейнер
 /ip/firewall/filter
-
-# 5.1. LAN -> контейнер (клиенты)
 add chain=forward action=accept in-interface-list=LAN out-interface=Bridge-Docker \
-    place-before=[find where comment~"Drop all other"] \
+    place-before=[find where chain=forward action=drop comment~"Default Deny"] \
     comment="forward: LAN to ByeDPI"
 
-# 5.2. Контейнер -> LAN (ответы клиентам)
+# 5.2. Контейнер -> LAN
 add chain=forward action=accept in-interface=Bridge-Docker out-interface-list=LAN \
-    place-before=[find where comment~"Drop all other"] \
+    place-before=[find where chain=forward action=drop comment~"Default Deny"] \
     comment="forward: ByeDPI to LAN"
 
-# 5.3. Контейнер -> WAN (ByeDPI идёт в интернет)
+# 5.3. Контейнер -> WAN
 add chain=forward action=accept in-interface=Bridge-Docker out-interface-list=WAN \
-    place-before=[find where comment~"Drop all other"] \
+    place-before=[find where chain=forward action=drop comment~"Default Deny"] \
     comment="forward: ByeDPI to WAN"
 
-# 5.4. WAN -> контейнер (ответы из интернета)
+# 5.4. WAN -> контейнер
 add chain=forward action=accept in-interface-list=WAN out-interface=Bridge-Docker \
-    place-before=[find where comment~"Drop all other"] \
+    place-before=[find where chain=forward action=drop comment~"Default Deny"] \
     comment="forward: WAN to ByeDPI"
 
 # 5.5. Блок QUIC (UDP/443) для bypass-адресов -> YouTube откатится на TCP
 add chain=forward protocol=udp dst-port=443 dst-address-list=za_dpi_FWD \
     action=drop \
-    place-before=[find where comment~"Drop all other"] \
+    place-before=[find where chain=forward action=drop comment~"Default Deny"] \
     comment="Block QUIC for bypass -> TCP fallback"
 
-# ---- 6. Mangle: маркировка + MSS clamp ----
-# 6.1. MSS clamp для трафика в контейнер (важно для TLS handshake)
+# ---- 6. Mangle: MSS clamp + маркировка ----
 /ip/firewall/mangle
+# 6.1. MSS clamp OUT (клиент -> контейнер)
 add chain=forward action=change-mss new-mss=clamp-to-pmtu passthrough=yes \
     tcp-flags=syn protocol=tcp out-interface=Bridge-Docker \
     place-before=0 comment="Mangle: Fix ByeDPI MSS OUT"
+# 6.2. MSS clamp IN (контейнер -> клиент, важно для SYN-ACK)
 add chain=forward action=change-mss new-mss=clamp-to-pmtu passthrough=yes \
     tcp-flags=syn protocol=tcp in-interface=Bridge-Docker \
     place-before=1 comment="Mangle: Fix ByeDPI MSS IN"
-
-# 6.2. Маркировка bypass-соединений (ставим в самое начало prerouting)
+# 6.3. Маркировка bypass-соединений (самое начало prerouting)
 add action=mark-connection chain=prerouting connection-mark=no-mark \
     dst-address-list=za_dpi_FWD in-interface-list=LAN \
     new-connection-mark=to_dpi passthrough=yes \
@@ -114,8 +125,7 @@ add action=mark-routing chain=prerouting connection-mark=to_dpi \
     passthrough=no routing-mark=!dpi_mark \
     place-before=1 comment="To DPI table"
 
-# ---- 7. DNS: DoH через IP (обход подмены DNS провайдером) ----
-# Cloudflare DoH через IP 1.1.1.1 (сертификат не проверяем — работает по IP)
+# ---- 7. DNS: DoH через IP ----
 /ip/dns
 set use-doh-server="https://1.1.1.1/dns-query" verify-doh-cert=no \
     servers=1.1.1.1,8.8.8.8 allow-remote-requests=yes
@@ -138,7 +148,7 @@ add name=update-antifilter dont-require-permissions=no policy=read,write,test,ft
 add name=antifilter-update interval=1d start-time=04:00:00 \
     on-event=update-antifilter comment="Daily antifilter refresh"
 
-# ---- 10. Health-check: авто-восстановление контейнера после ребута ----
+# ---- 10. Health-check ----
 /system/script
 add name=byedpi-healthcheck dont-require-permissions=no policy=read,write,test \
     source={
@@ -148,7 +158,6 @@ add name=byedpi-healthcheck dont-require-permissions=no policy=read,write,test \
     :global byedpiFails
     :if ([:typeof $byedpiFails] = "nothing") do={ :set byedpiFails 0 }
 
-    # ЭТАП 1: контейнер существует?
     :local cIdx [/container/find where interface=$containerIf]
     :if ([:len $cIdx] = 0) do={
         :log warning "byedpi-hc: container missing -> re-creating"
@@ -159,12 +168,11 @@ add name=byedpi-healthcheck dont-require-permissions=no policy=read,write,test \
                 envlists=byedpi start-on-boot=yes logging=yes
             :delay 10s
             /container/start [find where interface=$containerIf]
-            :log info "byedpi-hc: container re-created and started"
+            :log info "byedpi-hc: container re-created"
         } on-error={ :log error "byedpi-hc: re-add failed" }
         :return
     }
 
-    # ЭТАП 2: контейнер в статусе running?
     :local ok false
     :if ([:len [/container/find where interface=$containerIf and status=running]] > 0) do={
         :set ok true
@@ -172,7 +180,6 @@ add name=byedpi-healthcheck dont-require-permissions=no policy=read,write,test \
         :log warning "byedpi-hc: container not running"
     }
 
-    # ЭТАП 3: реакция
     :if ($ok) do={
         :if ($byedpiFails > 0) do={
             :log info "byedpi-hc: recovered after $byedpiFails fails"
@@ -182,7 +189,7 @@ add name=byedpi-healthcheck dont-require-permissions=no policy=read,write,test \
         :set byedpiFails ($byedpiFails + 1)
         :log warning "byedpi-hc: check FAILED ($byedpiFails/$maxFails)"
         :if ($byedpiFails >= $maxFails) do={
-            :log error "byedpi-hc: restarting container"
+            :log error "byedpi-hc: restarting"
             :do {
                 /container/stop [find where interface=$containerIf]
                 :delay 5s
@@ -196,7 +203,7 @@ add name=byedpi-healthcheck dont-require-permissions=no policy=read,write,test \
 }
 /system/scheduler
 add name=byedpi-healthcheck interval=2m on-event=byedpi-healthcheck \
-    comment="ByeDPI health monitor + tmpfs recovery"
+    comment="ByeDPI health monitor"
 
 # ---- 11. Первый запуск ----
 /system/script run update-antifilter

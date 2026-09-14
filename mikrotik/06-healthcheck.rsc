@@ -2,6 +2,9 @@
 #  HEALTH-CHECK: авто-восстановление контейнера после ребута
 #  Требует policy: read,write,test
 # ==========================================================
+/system/script/remove [find where name="byedpi-healthcheck"]
+/system/scheduler/remove [find where name="byedpi-healthcheck"]
+
 /system/script
 add name=byedpi-healthcheck dont-require-permissions=no policy=read,write,test \
     source={
@@ -21,7 +24,7 @@ add name=byedpi-healthcheck dont-require-permissions=no policy=read,write,test \
                 envlists=byedpi start-on-boot=yes logging=yes
             :delay 10s
             /container/start [find where interface=$containerIf]
-            :log info "byedpi-hc: container re-created and started"
+            :log info "byedpi-hc: container re-created"
         } on-error={ :log error "byedpi-hc: re-add failed" }
         :return
     }
@@ -42,7 +45,7 @@ add name=byedpi-healthcheck dont-require-permissions=no policy=read,write,test \
         :set byedpiFails ($byedpiFails + 1)
         :log warning "byedpi-hc: check FAILED ($byedpiFails/$maxFails)"
         :if ($byedpiFails >= $maxFails) do={
-            :log error "byedpi-hc: restarting container"
+            :log error "byedpi-hc: restarting"
             :do {
                 /container/stop [find where interface=$containerIf]
                 :delay 5s
@@ -56,4 +59,4 @@ add name=byedpi-healthcheck dont-require-permissions=no policy=read,write,test \
 }
 /system/scheduler
 add name=byedpi-healthcheck interval=2m on-event=byedpi-healthcheck \
-    comment="ByeDPI health monitor + tmpfs recovery"
+    comment="ByeDPI health monitor"
