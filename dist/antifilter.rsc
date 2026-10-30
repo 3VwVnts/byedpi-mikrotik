@@ -1,4 +1,4 @@
-# Auto-generated antifilter list (2026-10-29)
+# Auto-generated antifilter list (2026-10-30)
 # Source: https://antifilter.download/list/allyouneed.lst
 /ip firewall address-list
 :do { remove [find list=za_dpi_FWD] } on-error={}
@@ -1210,6 +1210,7 @@ add list=za_dpi_FWD address=18.65.40.0/24
 add list=za_dpi_FWD address=18.65.48.0/24
 add list=za_dpi_FWD address=18.65.59.0/24
 add list=za_dpi_FWD address=18.65.82.0/24
+add list=za_dpi_FWD address=18.65.185.0/24
 add list=za_dpi_FWD address=18.65.207.0/24
 add list=za_dpi_FWD address=18.65.214.0/24
 add list=za_dpi_FWD address=18.65.244.0/24
@@ -1576,6 +1577,7 @@ add list=za_dpi_FWD address=23.55.104.0/24
 add list=za_dpi_FWD address=23.55.106.0/24
 add list=za_dpi_FWD address=23.55.110.0/24
 add list=za_dpi_FWD address=23.56.0.0/24
+add list=za_dpi_FWD address=23.56.109.0/24
 add list=za_dpi_FWD address=23.58.115.0/24
 add list=za_dpi_FWD address=23.59.4.0/24
 add list=za_dpi_FWD address=23.59.88.0/24
@@ -3041,6 +3043,7 @@ add list=za_dpi_FWD address=45.129.98.0/24
 add list=za_dpi_FWD address=45.129.124.0/24
 add list=za_dpi_FWD address=45.129.199.0/24
 add list=za_dpi_FWD address=45.129.229.0/24
+add list=za_dpi_FWD address=45.130.16.0/24
 add list=za_dpi_FWD address=45.130.18.0/24
 add list=za_dpi_FWD address=45.130.41.0/24
 add list=za_dpi_FWD address=45.130.42.0/23
@@ -3230,6 +3233,7 @@ add list=za_dpi_FWD address=45.159.189.0/24
 add list=za_dpi_FWD address=45.163.231.0/24
 add list=za_dpi_FWD address=45.165.178.0/24
 add list=za_dpi_FWD address=45.184.4.0/24
+add list=za_dpi_FWD address=45.192.12.0/24
 add list=za_dpi_FWD address=45.194.53.0/24
 add list=za_dpi_FWD address=45.195.222.0/24
 add list=za_dpi_FWD address=45.196.168.0/24
@@ -5915,7 +5919,7 @@ add list=za_dpi_FWD address=77.220.212.0/22
 add list=za_dpi_FWD address=77.221.130.0/24
 add list=za_dpi_FWD address=77.221.148.0/24
 add list=za_dpi_FWD address=77.221.154.0/23
-add list=za_dpi_FWD address=77.222.33.0/24
+add list=za_dpi_FWD address=77.222.32.0/23
 add list=za_dpi_FWD address=77.222.40.0/24
 add list=za_dpi_FWD address=77.222.52.0/23
 add list=za_dpi_FWD address=77.222.54.0/24
@@ -5934,6 +5938,7 @@ add list=za_dpi_FWD address=77.232.131.0/24
 add list=za_dpi_FWD address=77.233.220.0/23
 add list=za_dpi_FWD address=77.233.248.0/24
 add list=za_dpi_FWD address=77.235.24.0/24
+add list=za_dpi_FWD address=77.235.41.0/24
 add list=za_dpi_FWD address=77.235.50.0/24
 add list=za_dpi_FWD address=77.235.62.0/24
 add list=za_dpi_FWD address=77.238.2.0/24
@@ -5980,7 +5985,7 @@ add list=za_dpi_FWD address=78.17.29.0/24
 add list=za_dpi_FWD address=78.17.34.0/24
 add list=za_dpi_FWD address=78.17.60.0/24
 add list=za_dpi_FWD address=78.17.68.0/24
-add list=za_dpi_FWD address=78.17.70.0/24
+add list=za_dpi_FWD address=78.17.70.0/23
 add list=za_dpi_FWD address=78.17.86.0/24
 add list=za_dpi_FWD address=78.17.147.0/24
 add list=za_dpi_FWD address=78.17.154.0/24
@@ -6150,6 +6155,7 @@ add list=za_dpi_FWD address=79.127.140.0/24
 add list=za_dpi_FWD address=79.127.211.0/24
 add list=za_dpi_FWD address=79.127.213.0/24
 add list=za_dpi_FWD address=79.127.237.0/24
+add list=za_dpi_FWD address=79.127.243.0/24
 add list=za_dpi_FWD address=79.129.44.0/24
 add list=za_dpi_FWD address=79.132.136.0/23
 add list=za_dpi_FWD address=79.132.140.0/24
@@ -8494,6 +8500,7 @@ add list=za_dpi_FWD address=95.179.193.0/24
 add list=za_dpi_FWD address=95.179.200.0/24
 add list=za_dpi_FWD address=95.179.224.0/24
 add list=za_dpi_FWD address=95.179.232.0/24
+add list=za_dpi_FWD address=95.181.49.0/24
 add list=za_dpi_FWD address=95.181.162.0/24
 add list=za_dpi_FWD address=95.181.167.0/24
 add list=za_dpi_FWD address=95.181.171.0/24
@@ -9109,7 +9116,7 @@ add list=za_dpi_FWD address=104.194.133.0/24
 add list=za_dpi_FWD address=104.194.134.0/24
 add list=za_dpi_FWD address=104.194.141.0/24
 add list=za_dpi_FWD address=104.194.146.0/24
-add list=za_dpi_FWD address=104.194.149.0/24
+add list=za_dpi_FWD address=104.194.148.0/23
 add list=za_dpi_FWD address=104.194.152.0/24
 add list=za_dpi_FWD address=104.194.158.0/24
 add list=za_dpi_FWD address=104.200.20.0/24
@@ -10827,6 +10834,7 @@ add list=za_dpi_FWD address=144.31.217.0/24
 add list=za_dpi_FWD address=144.31.218.0/24
 add list=za_dpi_FWD address=144.31.222.0/24
 add list=za_dpi_FWD address=144.31.229.0/24
+add list=za_dpi_FWD address=144.31.237.0/24
 add list=za_dpi_FWD address=144.31.238.0/24
 add list=za_dpi_FWD address=144.31.244.0/23
 add list=za_dpi_FWD address=144.31.250.0/24
@@ -11070,6 +11078,7 @@ add list=za_dpi_FWD address=146.209.49.0/24
 add list=za_dpi_FWD address=146.212.74.0/24
 add list=za_dpi_FWD address=147.15.17.0/24
 add list=za_dpi_FWD address=147.18.65.0/24
+add list=za_dpi_FWD address=147.45.42.0/24
 add list=za_dpi_FWD address=147.45.45.0/24
 add list=za_dpi_FWD address=147.45.48.0/23
 add list=za_dpi_FWD address=147.45.69.0/24
@@ -12341,6 +12350,7 @@ add list=za_dpi_FWD address=161.104.32.0/24
 add list=za_dpi_FWD address=161.104.44.0/24
 add list=za_dpi_FWD address=161.104.47.0/24
 add list=za_dpi_FWD address=161.104.52.0/24
+add list=za_dpi_FWD address=161.104.56.0/24
 add list=za_dpi_FWD address=161.104.78.0/23
 add list=za_dpi_FWD address=161.104.88.0/24
 add list=za_dpi_FWD address=161.104.106.0/24
@@ -12911,6 +12921,7 @@ add list=za_dpi_FWD address=167.235.153.0/24
 add list=za_dpi_FWD address=167.235.184.0/24
 add list=za_dpi_FWD address=167.235.214.0/24
 add list=za_dpi_FWD address=167.235.233.0/24
+add list=za_dpi_FWD address=167.250.5.0/24
 add list=za_dpi_FWD address=167.251.235.0/24
 add list=za_dpi_FWD address=167.253.65.0/24
 add list=za_dpi_FWD address=167.253.158.0/24
@@ -14351,6 +14362,7 @@ add list=za_dpi_FWD address=185.98.7.0/24
 add list=za_dpi_FWD address=185.98.53.0/24
 add list=za_dpi_FWD address=185.98.54.0/23
 add list=za_dpi_FWD address=185.98.60.0/24
+add list=za_dpi_FWD address=185.98.131.0/24
 add list=za_dpi_FWD address=185.99.71.0/24
 add list=za_dpi_FWD address=185.99.97.0/24
 add list=za_dpi_FWD address=185.99.199.0/24
@@ -16511,7 +16523,7 @@ add list=za_dpi_FWD address=198.115.114.0/24
 add list=za_dpi_FWD address=198.135.184.0/24
 add list=za_dpi_FWD address=198.136.49.0/24
 add list=za_dpi_FWD address=198.143.156.0/24
-add list=za_dpi_FWD address=198.144.121.0/24
+add list=za_dpi_FWD address=198.144.120.0/23
 add list=za_dpi_FWD address=198.144.179.0/24
 add list=za_dpi_FWD address=198.148.92.0/24
 add list=za_dpi_FWD address=198.148.174.0/24
@@ -16640,7 +16652,6 @@ add list=za_dpi_FWD address=199.232.66.0/24
 add list=za_dpi_FWD address=199.232.81.0/24
 add list=za_dpi_FWD address=199.232.151.0/24
 add list=za_dpi_FWD address=199.232.153.0/24
-add list=za_dpi_FWD address=199.232.169.0/24
 add list=za_dpi_FWD address=199.232.173.0/24
 add list=za_dpi_FWD address=199.232.174.0/24
 add list=za_dpi_FWD address=199.232.193.0/24
@@ -17868,6 +17879,7 @@ add list=za_dpi_FWD address=217.28.222.0/24
 add list=za_dpi_FWD address=217.29.53.0/24
 add list=za_dpi_FWD address=217.29.62.0/24
 add list=za_dpi_FWD address=217.60.33.0/24
+add list=za_dpi_FWD address=217.60.35.0/24
 add list=za_dpi_FWD address=217.60.63.0/24
 add list=za_dpi_FWD address=217.60.98.0/24
 add list=za_dpi_FWD address=217.60.179.0/24
@@ -17875,8 +17887,7 @@ add list=za_dpi_FWD address=217.60.183.0/24
 add list=za_dpi_FWD address=217.60.195.0/24
 add list=za_dpi_FWD address=217.60.199.0/24
 add list=za_dpi_FWD address=217.61.43.0/24
-add list=za_dpi_FWD address=217.61.208.0/23
-add list=za_dpi_FWD address=217.61.211.0/24
+add list=za_dpi_FWD address=217.61.208.0/22
 add list=za_dpi_FWD address=217.61.212.0/24
 add list=za_dpi_FWD address=217.64.195.0/24
 add list=za_dpi_FWD address=217.65.5.0/24
