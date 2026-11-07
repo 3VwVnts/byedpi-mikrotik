@@ -1,4 +1,4 @@
-# Auto-generated antifilter list (2026-11-06)
+# Auto-generated antifilter list (2026-11-07)
 # Source: https://antifilter.download/list/allyouneed.lst
 /ip firewall address-list
 :do { remove [find list=za_dpi_FWD] } on-error={}
